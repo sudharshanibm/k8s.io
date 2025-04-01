@@ -13,27 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+variable "resource_group_conformance" {}
+variable "resource_group_e2e" {}
+variable "resource_group_unit" {}
 
-locals {
-  key    = var.ibmcloud_api_key
-  region = "osa"
-  zone   = "osa21"
-}
-
-provider "ibm" {
-  ibmcloud_api_key = local.key
-  region           = local.region
-  zone             = local.zone
-}
-
-provider "ibm" {
-  alias            = "vpc"
-  ibmcloud_api_key = local.key
-  region           = "jp-osa"
-}
-
-provider "ibm" {
-  alias            = "vpcs"
-  ibmcloud_api_key = local.key
-  region           = "eu-de"
-}

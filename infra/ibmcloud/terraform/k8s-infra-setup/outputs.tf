@@ -15,9 +15,9 @@ limitations under the License.
 */
 
 output "secrets_manager_id" {
-  value = module.secrets_manager.k8s_secrets_manager_id
+  value = length(module.secrets_manager) > 0 ? module.secrets_manager[0].k8s_secrets_manager_id : null
 }
 
 output "powervs_service_instance_id" {
-  value = ibm_pi_workspace.build_cluster.id
+  value = length(ibm_pi_workspace.build_cluster) > 0 ? ibm_pi_workspace.build_cluster[0].id : null
 }

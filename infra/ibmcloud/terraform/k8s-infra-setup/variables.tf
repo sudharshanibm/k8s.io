@@ -24,3 +24,12 @@ variable "ibmcloud_api_key" {
     error_message = "The ibmcloud_api_key is required and cannot be empty."
   }
 }
+variable "prefix_z" {
+  type    = string
+  default = "k8s-infra-z"
+}
+variable "target_architecture" {
+  description = "Target architecture for resource creation"
+  type        = string
+  default     = "ppc64le" # Set your default architecture here
+}
