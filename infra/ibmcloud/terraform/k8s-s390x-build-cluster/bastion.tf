@@ -46,14 +46,35 @@ resource "ibm_is_instance" "bastion" {
     size = each.value.boot_volume.size
   }
 
+  lifecycle {
+    precondition {
+      condition     = local.bootstrap_ssh_key_is_valid
+      error_message = "The Secrets Manager public key must be a single valid authorized_keys line before Terraform can provision access."
+    }
+  }
+
   user_data = <<-EOF
               #cloud-config
               package_update: true
               package_upgrade: true
+              disable_root: false
+              ssh_pwauth: false
               packages:
                 - tcpdump
                 - net-tools
                 - iptables-persistent
+              
+              # Preserve the distro default account and add the automation user.
+              users:
+                - default
+                - name: ${local.bootstrap_admin_user}
+                  gecos: Kubernetes Administrator
+                  groups: sudo
+                  lock_passwd: true
+                  shell: /bin/bash
+                  ssh_authorized_keys:
+                    - ${jsonencode(local.bootstrap_ssh_public_key)}
+              
               write_files:
                 - path: /etc/ssh/sshd_config.d/99-bastion.conf
                   content: |
@@ -62,10 +83,18 @@ resource "ibm_is_instance" "bastion" {
                     PermitTunnel yes
                     PermitRootLogin prohibit-password
                     PasswordAuthentication no
+                    PubkeyAuthentication yes
                     ClientAliveInterval 120
                     ClientAliveCountMax 3
                     MaxSessions 50
                     MaxStartups 50:30:100
+                - path: /etc/sudoers.d/k8s-admin
+                  content: |
+                    # Passwordless sudo for k8s-admin user
+                    # Required for Ansible automation - Ansible modules use Python internally
+                    # Security: Access is still restricted by SSH key authentication
+                    k8s-admin ALL=(ALL) NOPASSWD: ALL
+                  permissions: '0440'
                 - path: /etc/systemd/network/10-eth1.network
                   content: |
                     [Match]

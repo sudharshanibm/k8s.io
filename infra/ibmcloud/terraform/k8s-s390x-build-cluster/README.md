@@ -106,11 +106,18 @@ For example:
 192.168.100.6
 192.168.100.7
 
+[all:vars]
+# Use k8s-admin user instead of root (required as of Feb 23, 2026)
+ansible_user=k8s-admin
+ansible_become=yes
+ansible_become_method=sudo
+# Note: ansible_become_user is NOT set to root - sudo uses current user with elevated privileges
+
 [workers:vars]
-ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -i <path/to/private-key> -q root@56.77.34.6" -i <path/to/private-key>'
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -i <path/to/private-key> -q k8s-admin@56.77.34.6" -i <path/to/private-key>'
 
 [masters:vars]
-ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -i <path/to/private-key> -q root@56.77.34.6" -i <path/to/private-key>'
+ansible_ssh_common_args='-o ProxyCommand="ssh -W %h:%p -i <path/to/private-key> -q k8s-admin@56.77.34.6" -i <path/to/private-key>'
 ```
 
 **11. Update the fields under `group_vars/bastion_configuration` to contain the information of the private network.**
