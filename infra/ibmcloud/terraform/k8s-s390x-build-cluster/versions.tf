@@ -15,6 +15,7 @@ limitations under the License.
 */
 
 terraform {
+  required_version = ">= 1.9.0"
   backend "s3" {
     bucket                      = "k8s-z-infra-tf-states"
     key                         = "k8s-s390x-build-cluster/terraform.tfstate"

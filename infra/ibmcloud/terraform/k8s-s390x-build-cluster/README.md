@@ -1,6 +1,12 @@
 # _TF: IBM K8s s390x Build Cluster_
 These terraform resources define a IBM Cloud project containing a s390xVS cluster intended to serve as a "build cluster" for prow.k8s.io.
 
+## Existing production cluster: storage adoption
+
+The existing cluster must not be rebuilt with the initial-bootstrap instructions
+below. For CSI/storage reconciliation, use the [adoption runbook](STORAGE-ADOPTION.md).
+The reviewed plan must contain imports only and zero cloud resource operations.
+
 ---
 ## Initial Setup
 

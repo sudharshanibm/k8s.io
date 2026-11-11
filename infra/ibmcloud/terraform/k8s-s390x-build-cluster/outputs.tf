@@ -41,3 +41,29 @@ output "subnet_cidr" {
   description = "CIDR block of the public subnet"
   value       = data.ibm_is_subnet.subnet.ipv4_cidr_block
 }
+
+output "worker_csi_metadata" {
+  description = "Verified node-name/InternalIP mapping for provider CSI node preparation. Contains no credentials."
+  value = {
+    for instance in ibm_is_instance.compute : instance.name => {
+      instance_id = instance.id
+      internal_ip = instance.primary_network_interface[0].primary_ipv4_address
+      region      = var.region
+      zone        = var.zone
+    }
+  }
+}
+
+output "worker_data_storage" {
+  description = "Static disk identities and existing host configuration. Terraform does not format disks or change running containerd."
+  value = {
+    for key, disk in var.worker_data_volumes : key => {
+      node_name       = ibm_is_instance.compute[disk.worker].name
+      volume_id       = ibm_is_volume.worker_data[key].id
+      attachment_id   = ibm_is_instance_volume_attachment.worker_data[key].volume_attachment_id
+      mount_path      = disk.mount_path
+      filesystem_uuid = disk.filesystem_uuid
+      containerd_root = disk.containerd_root
+    }
+  }
+}

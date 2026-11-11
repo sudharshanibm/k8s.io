@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: kube-system
+resources:
+  # Pin upstream manifests; do not consume a moving master branch.
+  - https://github.com/kubernetes-sigs/ibm-vpc-block-csi-driver//deploy/kubernetes/driver/kubernetes/overlays/stage?ref=3fff6454169aca35961993b49fae98ade600ad24
+  - storageclass.yaml
+  - credential-reload.yaml
+configMapGenerator:
+  - name: vpc-csi-credential-reload
+    files:
+      - reload-credentials.py
+patches:
+  # External Secrets owns this Secret. Never apply the upstream placeholder.
+  - target:
+      kind: Secret
+      name: storage-secret-store
+    patch: |-
+      $patch: delete
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: storage-secret-store
+        namespace: kube-system
+  - path: controller.yaml
+  - path: node.yaml
+  - target:
+      kind: ConfigMap
+      name: ibm-vpc-block-csi-configmap
+    patch: |-
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: ibm-vpc-block-csi-configmap
+      data:
+        VPC_API_GENERATION: "2"
+  - target:
+      kind: Deployment|DaemonSet|CSIDriver|StorageClass
+    patch: |-
+      - op: add
+        path: /metadata/annotations
+        value:
+          argocd.argoproj.io/sync-options: Prune=confirm

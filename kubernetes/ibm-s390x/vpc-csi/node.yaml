@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ibm-vpc-block-csi-node
+  namespace: kube-system
+spec:
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: s390x
+        storage.ibmcloud.k8s.io/vpc-csi-ready: "true"
+      containers:
+        - name: iks-vpc-block-node-driver
+          image: gcr.io/k8s-staging-cloud-provider-ibm/ibm-vpc-block-csi-driver@sha256:4918b0d2d5c9ef9d7783ed397ba9828f2eb31dd6363ab42ca3730b5569899e88

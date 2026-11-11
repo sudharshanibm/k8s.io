@@ -1,0 +1,7 @@
+# Non-secret inputs for the existing production identity.
+# Supply TF_VAR_ibmcloud_api_key separately through a protected environment.
+expected_account_id = "6efe35b964de46b0924c2e95fe410903"
+secrets_manager_id  = "0664d47c-fe42-423f-930d-69570443cd15"
+region              = "eu-de"
+resource_group_name = "rg-build-cluster"
+name_prefix         = "k8s-s390x"

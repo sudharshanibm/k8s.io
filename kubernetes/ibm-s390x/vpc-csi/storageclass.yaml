@@ -1,0 +1,14 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ibmc-vpc-block-retain-general-purpose
+provisioner: vpc.block.csi.ibm.io
+parameters:
+  profile: general-purpose
+  csi.storage.k8s.io/fstype: ext4
+  billingType: hourly
+  encrypted: "false"
+  classVersion: "1"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer

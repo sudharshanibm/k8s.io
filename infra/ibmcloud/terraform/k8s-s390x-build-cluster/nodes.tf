@@ -61,6 +61,17 @@ resource "ibm_is_instance" "control_plane" {
     size = each.value.boot_volume.size
   }
 
+  lifecycle {
+    prevent_destroy = true
+    precondition {
+      condition     = data.ibm_resource_group.resource_group.account_id == var.expected_account_id
+      error_message = "Refusing to manage the persistent build cluster in an unexpected IBM Cloud account."
+    }
+    # Cloud-init is creation-only. The existing nodes predate this template.
+    # Static attachments and CSI PVC attachments have separate owners.
+    ignore_changes = [user_data, volumes]
+  }
+
   user_data = <<-EOF
               #cloud-config
               package_update: true
@@ -114,6 +125,17 @@ resource "ibm_is_instance" "compute" {
   boot_volume {
     name = "boot-vol-worker-s390x-${each.key}"
     size = each.value.boot_volume.size
+  }
+
+  lifecycle {
+    prevent_destroy = true
+    precondition {
+      condition     = data.ibm_resource_group.resource_group.account_id == var.expected_account_id
+      error_message = "Refusing to manage the persistent build cluster in an unexpected IBM Cloud account."
+    }
+    # Cloud-init is creation-only. The existing nodes predate this template.
+    # Static attachments and CSI PVC attachments have separate owners.
+    ignore_changes = [user_data, volumes]
   }
 
   user_data = <<-EOF

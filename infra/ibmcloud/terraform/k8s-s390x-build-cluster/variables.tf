@@ -119,3 +119,39 @@ variable "api_server_port" {
   type        = number
   default     = 6443
 }
+
+variable "worker_data_volumes" {
+  description = "Existing static worker disks. Host mount/runtime configuration is managed separately; never put CSI PVC disks in this map."
+  type = map(object({
+    worker          = string
+    name            = string
+    profile         = string
+    capacity        = number
+    attachment_name = string
+    mount_path      = string
+    filesystem_uuid = string
+    containerd_root = optional(string)
+  }))
+  default = {}
+
+  validation {
+    condition = alltrue([
+      for disk in values(var.worker_data_volumes) :
+      contains([for n in range(1, var.compute_node_count + 1) : tostring(n)], disk.worker) &&
+      disk.capacity > 0 && startswith(disk.mount_path, "/mnt/") &&
+      can(regex("^[0-9a-f-]{36}$", disk.filesystem_uuid))
+    ])
+    error_message = "Each disk must map to an existing worker, positive capacity and an explicit /mnt path and filesystem UUID."
+  }
+}
+
+variable "expected_account_id" {
+  description = "Production IBM Cloud account expected to own rg-build-cluster. Override only for an intentionally separate cluster and state."
+  type        = string
+  default     = "6efe35b964de46b0924c2e95fe410903"
+
+  validation {
+    condition     = can(regex("^[0-9a-f]{32}$", var.expected_account_id))
+    error_message = "expected_account_id must be a 32-character IBM Cloud account ID."
+  }
+}

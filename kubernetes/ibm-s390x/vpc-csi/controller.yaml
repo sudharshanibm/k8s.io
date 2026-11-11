@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ibm-vpc-block-csi-controller
+  namespace: kube-system
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: s390x
+        storage.ibmcloud.k8s.io/vpc-csi-ready: "true"
+      containers:
+        # Snapshots are outside this deployment. No snapshot CRDs or
+        # snapshot controller are installed by this component.
+        - name: csi-snapshotter
+          $patch: delete
+        - name: iks-vpc-block-driver
+          # Immutable index verified against all four image configurations.
+          # GCR staging build from merged PR #280; qualified on production workers.
+          image: gcr.io/k8s-staging-cloud-provider-ibm/ibm-vpc-block-csi-driver@sha256:4918b0d2d5c9ef9d7783ed397ba9828f2eb31dd6363ab42ca3730b5569899e88

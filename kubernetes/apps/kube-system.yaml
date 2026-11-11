@@ -31,3 +31,25 @@ spec:
         automated:
           prune: true
           selfHeal: true
+  templatePatch: |
+    {{- if eq .name "ibm-s390x" }}
+    spec:
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          name: ibm-vpc-block-csi-controller
+          namespace: kube-system
+          jsonPointers:
+            - /spec/template/metadata/annotations/storage.ibmcloud.k8s.io~1credential-sha256
+        - group: apps
+          kind: DaemonSet
+          name: ibm-vpc-block-csi-node
+          namespace: kube-system
+          jsonPointers:
+            - /spec/template/metadata/annotations/storage.ibmcloud.k8s.io~1credential-sha256
+      syncPolicy:
+        syncOptions:
+          - RespectIgnoreDifferences=true
+    {{- else }}
+    {}
+    {{- end }}
